@@ -41,6 +41,10 @@ Snake.Point.prototype.toString = function () {
     return this.x + "," + this.y;
 };
 
+Snake.Point.prototype.collides = function (other) {
+    return (this.x === other.x && this.y === other.y);
+};
+
 Snake.Direction = {
     Up: 38,
     Down: 40,
@@ -61,8 +65,8 @@ Snake.Config = function () {
 Snake.State = function () {
     this.level = 1;
     this.score = 0;
-    this.paused = false;
-    this.intervalMillis = 2000;
+    this.gameOver = false;
+    this.intervalMillis = 1000;
     this.direction = Snake.Direction.Up;
 };
 
@@ -75,6 +79,9 @@ Snake.Game = function (doc, wnd) {
 };
 
 Snake.Game.prototype.initBox = function () {
+    if (this.box) {
+        return;
+    }
     var x = 0, y = 0;
     this.box = [];
     // left
@@ -104,6 +111,9 @@ Snake.Game.prototype.initBox = function () {
 };
 
 Snake.Game.prototype.initSnake = function () {
+    if (this.snake) {
+        return;
+    }
     var i = 0;
     this.snake = [];
     // from head to tail
@@ -134,6 +144,9 @@ Snake.Game.prototype.calculateShift = function () {
 };
 
 Snake.Game.prototype.moveSnake = function () {
+    if (this.state.gameOver) {
+        return;
+    }
     var head = new Snake.Point(this.snake[0].x, this.snake[0].y),
         shift = this.calculateShift();
     head.x = head.x + shift.x;
@@ -142,28 +155,50 @@ Snake.Game.prototype.moveSnake = function () {
     this.snake.pop();
 };
 
+Snake.Game.prototype.collides = function (a, b) {
+    var i = 0, j = 0;
+    for (i = 0; i < a.length; i = i + 1) {
+        for (j = 0; j < b.length; j = j + 1) {
+            if (a[i].collides(b[j])) {
+                return true;
+            }
+        }
+    }
+    return false;
+};
+
 Snake.Game.prototype.placeTreat = function () {
+    if (this.state.gameOver) {
+        return;
+    }
     // FIXME: get random location, but
     // FIXME: check for collision
 };
 
-Snake.Game.prototype.update = function () {
-    if (!this.box) {
-        this.initBox();
+Snake.Game.prototype.checkCollisions = function () {
+    if (this.state.gameOver) {
+        return;
     }
-    if (!this.snake) {
-        this.initSnake();
-    } else {
-        this.moveSnake();
-    }
-    if (!this.treat) {
-        this.placeTreat();
-    } else {
-        this.replaceTreat();
+    if (this.collides(this.snake, this.box)) {
+        this.state.gameOver = true;
     }
 };
 
+Snake.Game.prototype.update = function () {
+    this.initBox();
+    this.initSnake();
+
+    this.moveSnake();
+    this.placeTreat();
+
+    this.checkCollisions();
+};
+
 Snake.Game.prototype.draw = function () {
+    if (this.state.gameOver) {
+        console.log('game over!');
+        return;
+    }
     // FIXME: box
     // FIXME: snake
     // FIXME: treat
@@ -172,31 +207,37 @@ Snake.Game.prototype.draw = function () {
 };
 
 Snake.Game.prototype.onkeydown = function (evt) {
-    switch (evt.keyCode) {
-    case Snake.Direction.Up:
-    case Snake.Direction.Down:
-    case Snake.Direction.Left:
-    case Snake.Direction.Right:
+    if (this.state.gameOver) {
+        return;
+    }
+    var code = evt.keyCode;
+    if ((Snake.Direction.Up === code && Snake.Direction.Down !== this.state.direction)
+            || (Snake.Direction.Down === code && Snake.Direction.Up !== this.state.direction)
+            || (Snake.Direction.Left === code && Snake.Direction.Right !== this.state.direction)
+            || (Snake.Direction.Right === code && Snake.Direction.Left !== this.state.direction)) {
         console.log('new direction', evt.keyCode);
-        this.state.direction = evt.keyCode;
-        break;
-    case Snake.KeyCode.Pause:
+        this.state.direction = code;
+    } else if (Snake.KeyCode.Pause === code) {
         this.pause();
-        break;
-    case Snake.KeyCode.Resume:
+    } else if (Snake.KeyCode.Resume === code) {
         this.resume();
-        break;
     }
     return true;
 };
 
 Snake.Game.prototype.pause = function () {
+    if (this.state.gameOver) {
+        return;
+    }
     console.log('pause');
     this.wnd.clearInterval(this.timer);
     delete this.timer;
 };
 
 Snake.Game.prototype.resume = function () {
+    if (this.state.gameOver) {
+        return;
+    }
     console.log('resume');
     if (!this.timer) {
         this.timer = this.wnd.setInterval(this.loop.bind(this), this.state.intervalMillis);
