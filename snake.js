@@ -65,12 +65,43 @@ Snake.Game = function (doc, wnd) {
 };
 
 Snake.Game.prototype.update = function () {
-    console.log('update');
+    if (!this.box) {
+        this.box = [];
+        var x = 0, y = 0;
+        // left
+        x = 0;
+        for (y = 0; y < this.config.boxSize; y = y + 1) {
+            this.box.push(new Snake.Point(x, y));
+            console.log(x, y);
+        }
+        // top
+        y = this.config.boxSize - 1;
+        for (x = 0; x < this.config.boxSize; x = x + 1) {
+            this.box.push(new Snake.Point(x, y));
+            console.log(x, y);
+        }
+        // right
+        x = this.config.boxSize - 1;
+        for (y = this.config.boxSize - 2; y >= 0; y = y - 1) {
+            this.box.push(new Snake.Point(x, y));
+            console.log(x, y);
+        }
+        // bottom
+        y = 0;
+        for (x = this.config.boxSize - 2; x > 0; x = x - 1) {
+            this.box.push(new Snake.Point(x, y));
+            console.log(x, y);
+        }
+    }
+    if (!this.treat) {
+        // FIXME: place treat
+    }
+    if (!this.snake) {
+        // FIXME: place snake at the bottom center
+    }
 };
 
-Snake.Game.prototype.draw = function () {
-    console.log('draw');
-};
+Snake.Game.prototype.draw = function () {};
 
 Snake.Game.prototype.onkeydown = function (evt) {
     switch (evt.keyCode) {
