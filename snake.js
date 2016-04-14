@@ -44,6 +44,11 @@ Snake.Direction = {
     Right: 39,
 };
 
+Snake.KeyCode = {
+    Pause: 80,
+    Resume: 82,
+};
+
 Snake.Config = function () {
     this.pixelSize = 1;
     this.boxSize = 20;
@@ -60,8 +65,9 @@ Snake.State = function () {
 Snake.Game = function (doc, wnd) {
     this.config = new Snake.Config();
     this.state = new Snake.State();
-    doc.onkeydown = this.onkeydown;
-    this.timer = wnd.setInterval(this.loop.bind(this), this.state.intervalMillis);
+    doc.onkeydown = this.onkeydown.bind(this);
+    this.wnd = wnd;
+    this.resume();
 };
 
 Snake.Game.prototype.update = function () {
@@ -93,15 +99,21 @@ Snake.Game.prototype.update = function () {
             console.log(x, y);
         }
     }
-    if (!this.treat) {
-        // FIXME: place treat
-    }
     if (!this.snake) {
         // FIXME: place snake at the bottom center
     }
+    if (!this.treat) {
+        // FIXME: check for collision
+    }
 };
 
-Snake.Game.prototype.draw = function () {};
+Snake.Game.prototype.draw = function () {
+    // FIXME: box
+    // FIXME: snake
+    // FIXME: treat
+    // FIXME: level
+    // FIXME: score
+};
 
 Snake.Game.prototype.onkeydown = function (evt) {
     switch (evt.keyCode) {
@@ -112,11 +124,31 @@ Snake.Game.prototype.onkeydown = function (evt) {
         console.log('new direction', evt.keyCode);
         this.direction = evt.keyCode;
         break;
+    case Snake.KeyCode.Pause:
+        this.pause();
+        break;
+    case Snake.KeyCode.Resume:
+        this.resume();
+        break;
     }
     return true;
 };
 
+Snake.Game.prototype.pause = function () {
+    console.log('pause');
+    this.wnd.clearInterval(this.timer);
+    delete this.timer;
+};
+
+Snake.Game.prototype.resume = function () {
+    console.log('resume');
+    if (!this.timer) {
+        this.timer = this.wnd.setInterval(this.loop.bind(this), this.state.intervalMillis);
+    }
+};
+
 Snake.Game.prototype.loop = function () {
+    console.log('loop');
     this.update();
     this.draw();
 };
