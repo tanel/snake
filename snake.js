@@ -66,7 +66,7 @@ Snake.KeyCode = {
 Snake.Config = function () {
     this.pixelSize = 1;
     this.boxSize = 20;
-    this.snakeLength = 10;
+    this.snakeLength = 3;
 };
 
 Snake.State = function () {
