@@ -37,6 +37,10 @@ Snake.Point = function (x, y) {
     this.y = y;
 };
 
+Snake.Point.prototype.toString = function () {
+    return this.x + "," + this.y;
+};
+
 Snake.Direction = {
     Up: 38,
     Down: 40,
@@ -71,9 +75,9 @@ Snake.Game = function (doc, wnd) {
 };
 
 Snake.Game.prototype.update = function () {
+    var x = 0, y = 0, i = 0;
     if (!this.box) {
         this.box = [];
-        var x = 0, y = 0;
         // left
         x = 0;
         for (y = 0; y < this.config.boxSize; y = y + 1) {
@@ -100,7 +104,11 @@ Snake.Game.prototype.update = function () {
         }
     }
     if (!this.snake) {
-        // FIXME: place snake at the bottom center
+        this.snake = [];
+        // from head to tail
+        for (i = 3; i > 0; i = i - 1) {
+            this.snake.push(new Snake.Point(this.config.boxSize / 2, i));
+        }
     }
     if (!this.treat) {
         // FIXME: check for collision
@@ -147,9 +155,17 @@ Snake.Game.prototype.resume = function () {
     }
 };
 
+Snake.Game.prototype.printSnake = function () {
+    var i = 0, s = "snake";
+    for (i = 0; i < this.snake.length; i = i + 1) {
+        s = s + " " + this.snake[i];
+    }
+    console.log(s);
+};
+
 Snake.Game.prototype.loop = function () {
-    console.log('loop');
     this.update();
+    this.printSnake();
     this.draw();
 };
 
