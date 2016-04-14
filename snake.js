@@ -32,6 +32,11 @@ Game features:
 
 var Snake = {};
 
+Snake.Point = function (x, y) {
+    this.x = x;
+    this.y = y;
+};
+
 Snake.Direction = {
     Up: 38,
     Down: 40,
