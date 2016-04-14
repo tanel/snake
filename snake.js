@@ -41,8 +41,14 @@ Snake.Point.prototype.toString = function () {
     return this.x + "," + this.y;
 };
 
-Snake.Point.prototype.collides = function (other) {
-    return (this.x === other.x && this.y === other.y);
+Snake.Point.prototype.collides = function (arr) {
+    var i;
+    for (i = 0; i < arr.length; i = i + 1) {
+        if (this.x === arr[i].x && this.y === arr[i].y) {
+            return true;
+        }
+    }
+    return false;
 };
 
 Snake.Direction = {
@@ -60,6 +66,7 @@ Snake.KeyCode = {
 Snake.Config = function () {
     this.pixelSize = 1;
     this.boxSize = 20;
+    this.snakeLength = 10;
 };
 
 Snake.State = function () {
@@ -117,7 +124,7 @@ Snake.Game.prototype.initSnake = function () {
     var i = 0;
     this.snake = [];
     // from head to tail
-    for (i = 3; i > 0; i = i - 1) {
+    for (i = this.config.snakeLength; i > 0; i = i - 1) {
         this.snake.push(new Snake.Point(this.config.boxSize / 2, i));
     }
 };
@@ -147,24 +154,29 @@ Snake.Game.prototype.moveSnake = function () {
     if (this.state.gameOver) {
         return;
     }
+
+    // Calculate new head
     var head = new Snake.Point(this.snake[0].x, this.snake[0].y),
         shift = this.calculateShift();
     head.x = head.x + shift.x;
     head.y = head.y + shift.y;
-    this.snake.unshift(head);
-    this.snake.pop();
-};
 
-Snake.Game.prototype.collides = function (a, b) {
-    var i = 0, j = 0;
-    for (i = 0; i < a.length; i = i + 1) {
-        for (j = 0; j < b.length; j = j + 1) {
-            if (a[i].collides(b[j])) {
-                return true;
-            }
-        }
+    // Remove tail
+    this.snake.pop();
+
+    // Check if head collides with something
+    if (head.collides(this.box)) {
+        this.state.gameOver = true;
     }
-    return false;
+    if (head.collides(this.snake)) {
+        this.state.gameOver = true;
+    }
+
+    // FIXME: Check if head collides with treat
+
+    // Set new head
+    this.snake.unshift(head);
+
 };
 
 Snake.Game.prototype.placeTreat = function () {
@@ -175,23 +187,12 @@ Snake.Game.prototype.placeTreat = function () {
     // FIXME: check for collision
 };
 
-Snake.Game.prototype.checkCollisions = function () {
-    if (this.state.gameOver) {
-        return;
-    }
-    if (this.collides(this.snake, this.box)) {
-        this.state.gameOver = true;
-    }
-};
-
 Snake.Game.prototype.update = function () {
     this.initBox();
     this.initSnake();
 
     this.moveSnake();
     this.placeTreat();
-
-    this.checkCollisions();
 };
 
 Snake.Game.prototype.draw = function () {
