@@ -34,7 +34,7 @@ var Snake = {};
 
 // Configuration
 Snake.Config = function () {
-    this.pixelSize = 1;
+    this.pixelSize = 30;
     this.boxSize = 20;
     this.snakeLength = 3;
     this.levelIncreaseIntervalMillis = 30000;
@@ -221,7 +221,26 @@ Snake.Game.prototype.placeTreat = function () {
     }
 };
 
+Snake.Game.prototype.initGrid = function () {
+    var i = 0,
+        j = 0,
+        topMargin = this.doc.getElementById('hud').offsetHeight,
+        div = null;
+    for (i = 0; i < this.config.boxSize; i = i + 1) {
+        for (j = 0; j < this.config.boxSize; j = j + 1) {
+            div = document.createElement('div');
+            div.className = 'cell';
+            div.style.width = this.config.pixelSize + 'px';
+            div.style.height = this.config.pixelSize + 'px';
+            div.style.left = (i * this.config.pixelSize) + 'px';
+            div.style.top = topMargin + (j * this.config.pixelSize) + 'px';
+            this.doc.body.appendChild(div);
+        }
+    }
+};
+
 Snake.Game.prototype.update = function () {
+    this.initGrid();
     this.initBox();
     this.initSnake();
 
