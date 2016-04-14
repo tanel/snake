@@ -93,8 +93,12 @@ Snake.Point.prototype.collides = function (arr) {
 Snake.Game = function (doc, wnd) {
     this.config = new Snake.Config();
     this.state = new Snake.State();
+
     doc.onkeydown = this.onkeydown.bind(this);
+
+    this.doc = doc;
     this.wnd = wnd;
+
     this.resume();
 };
 
@@ -102,7 +106,7 @@ Snake.Game.prototype.initBox = function () {
     if (this.box) {
         return;
     }
-    var x = 0, y = 0, pt = null;
+    var x = 0, y = 0;
     this.box = [];
     // left
     x = 0;
@@ -237,8 +241,10 @@ Snake.Game.prototype.draw = function () {
     // FIXME: box
     // FIXME: snake
     // FIXME: treat
-    // FIXME: level
-    // FIXME: score
+
+    this.doc.getElementById("level").innerHTML = this.state.level;
+
+    this.doc.getElementById("score").innerHTML = this.state.score;
 };
 
 Snake.Game.prototype.onkeydown = function (evt) {
