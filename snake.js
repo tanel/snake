@@ -32,25 +32,25 @@ Game features:
 
 var Snake = {};
 
-Snake.Point = function (x, y) {
-    this.x = x;
-    this.y = y;
+// Configuration
+Snake.Config = function () {
+    this.pixelSize = 1;
+    this.boxSize = 20;
+    this.snakeLength = 3;
+    this.levelIncreaseIntervalMillis = 30000;
+    this.minimumLoopIntervalMillis = 300;
 };
 
-Snake.Point.prototype.toString = function () {
-    return this.x + "," + this.y;
+// Initial game state
+Snake.State = function () {
+    this.level = 1;
+    this.score = 0;
+    this.gameOver = false;
+    this.loopIntervalMillis = 1000;
+    this.direction = Snake.Direction.Up;
 };
 
-Snake.Point.prototype.collides = function (arr) {
-    var i;
-    for (i = 0; i < arr.length; i = i + 1) {
-        if (this.x === arr[i].x && this.y === arr[i].y) {
-            return true;
-        }
-    }
-    return false;
-};
-
+// Const keycodes
 Snake.Direction = {
     Up: 38,
     Down: 40,
@@ -63,20 +63,33 @@ Snake.KeyCode = {
     Resume: 82,
 };
 
-Snake.Config = function () {
-    this.pixelSize = 1;
-    this.boxSize = 20;
-    this.snakeLength = 3;
+// Point represents a point on the screen (x, y)
+Snake.Point = function (x, y) {
+    this.x = x;
+    this.y = y;
 };
 
-Snake.State = function () {
-    this.level = 1;
-    this.score = 0;
-    this.gameOver = false;
-    this.intervalMillis = 1000;
-    this.direction = Snake.Direction.Up;
+Snake.Point.prototype.toString = function () {
+    return this.x + "," + this.y;
 };
 
+Snake.Point.prototype.collides = function (arr) {
+    var i;
+    if (!arr || !arr.length) {
+        throw "cannot check collision with empty array!";
+    }
+    for (i = 0; i < arr.length; i = i + 1) {
+        if (!arr[i]) {
+            throw "collision array contains null element!";
+        }
+        if (this.x === arr[i].x && this.y === arr[i].y) {
+            return true;
+        }
+    }
+    return false;
+};
+
+// Game engine
 Snake.Game = function (doc, wnd) {
     this.config = new Snake.Config();
     this.state = new Snake.State();
@@ -89,31 +102,27 @@ Snake.Game.prototype.initBox = function () {
     if (this.box) {
         return;
     }
-    var x = 0, y = 0;
+    var x = 0, y = 0, pt = null;
     this.box = [];
     // left
     x = 0;
     for (y = 0; y < this.config.boxSize; y = y + 1) {
         this.box.push(new Snake.Point(x, y));
-        console.log(x, y);
     }
     // top
     y = this.config.boxSize - 1;
     for (x = 0; x < this.config.boxSize; x = x + 1) {
         this.box.push(new Snake.Point(x, y));
-        console.log(x, y);
     }
     // right
     x = this.config.boxSize - 1;
     for (y = this.config.boxSize - 2; y >= 0; y = y - 1) {
         this.box.push(new Snake.Point(x, y));
-        console.log(x, y);
     }
     // bottom
     y = 0;
     for (x = this.config.boxSize - 2; x > 0; x = x - 1) {
         this.box.push(new Snake.Point(x, y));
-        console.log(x, y);
     }
 };
 
@@ -161,8 +170,16 @@ Snake.Game.prototype.moveSnake = function () {
     head.x = head.x + shift.x;
     head.y = head.y + shift.y;
 
-    // Remove tail
-    this.snake.pop();
+    // Check if head collides with treat
+    if (head.collides([this.treat])) {
+        // Leave tail in place, as treat was eaten
+        // Give points, according to level
+        this.state.points = this.state.points + this.state.level;
+        console.log('treat picked up, total points', this.state.points);
+    } else {
+        // Remove tail, as treat was not eaten
+        this.snake.pop();
+    }
 
     // Check if head collides with something
     if (head.collides(this.box)) {
@@ -172,27 +189,44 @@ Snake.Game.prototype.moveSnake = function () {
         this.state.gameOver = true;
     }
 
-    // FIXME: Check if head collides with treat
-
     // Set new head
     this.snake.unshift(head);
 
+};
+
+// http://stackoverflow.com/questions/1527803/generating-random-numbers-in-javascript-in-a-specific-range
+Snake.Game.prototype.getRandomInt = function (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
 Snake.Game.prototype.placeTreat = function () {
     if (this.state.gameOver) {
         return;
     }
-    // FIXME: get random location, but
-    // FIXME: check for collision
+    if (this.treat) {
+        return;
+    }
+    var x = 0, y = 0, treat = null;
+    while (!this.treat) {
+        x = this.getRandomInt(1, this.config.boxSize - 1);
+        y = this.getRandomInt(1, this.config.boxSize - 1);
+        treat = new Snake.Point(x, y);
+        if (!treat.collides(this.snake)) {
+            this.treat = treat;
+        }
+    }
 };
 
 Snake.Game.prototype.update = function () {
     this.initBox();
     this.initSnake();
 
-    this.moveSnake();
     this.placeTreat();
+
+    this.moveSnake();
+
+    this.printSnake();
+    this.printTreat();
 };
 
 Snake.Game.prototype.draw = function () {
@@ -209,6 +243,7 @@ Snake.Game.prototype.draw = function () {
 
 Snake.Game.prototype.onkeydown = function (evt) {
     if (this.state.gameOver) {
+        console.log("ignoring key, game is over");
         return;
     }
     var code = evt.keyCode;
@@ -228,22 +263,66 @@ Snake.Game.prototype.onkeydown = function (evt) {
 
 Snake.Game.prototype.pause = function () {
     if (this.state.gameOver) {
+        console.log('cannot pause, game is over');
         return;
     }
     console.log('pause');
+
     this.wnd.clearInterval(this.timer);
     delete this.timer;
+
+    this.wnd.clearInterval(this.increaseLevelTimer);
+    delete this.increaseLevelTimer;
+
+};
+
+Snake.Game.prototype.isPaused = function () {
+    return !this.timer;
 };
 
 Snake.Game.prototype.resume = function () {
     if (this.state.gameOver) {
+        console.log('cannot resume, game is over');
         return;
     }
     console.log('resume');
+
     if (!this.timer) {
-        this.timer = this.wnd.setInterval(this.loop.bind(this), this.state.intervalMillis);
+        this.timer = this.wnd.setInterval(this.loop.bind(this), this.state.loopIntervalMillis);
+    }
+
+    if (!this.increaseLevelTimer) {
+        this.increaseLevelTimer = this.wnd.setInterval(this.increaseLevel.bind(this), this.config.levelIncreaseIntervalMillis);
     }
 };
+
+Snake.Game.prototype.increaseLevel = function () {
+    if (this.isPaused()) {
+        console.log("will not increase level, game is paused");
+        return;
+    }
+    if (this.state.gameOver) {
+        console.log("will not increase level, game is over");
+        return;
+    }
+    this.state.level = this.state.level + 1;
+    delete this.timer;
+    this.state.loopIntervalMillis = this.state.loopIntervalMillis - 100;
+    if (this.state.loopIntervalMillis < this.config.minimumLoopIntervalMillis) {
+        this.state.loopIntervalMillis = this.config.minimumLoopIntervalMillis;
+    }
+
+    console.log('new level', this.state.level);
+
+    this.resume();
+};
+
+Snake.Game.prototype.loop = function () {
+    this.update();
+    this.draw();
+};
+
+// Debugging
 
 Snake.Game.prototype.printSnake = function () {
     var i = 0, s = "snake";
@@ -253,10 +332,12 @@ Snake.Game.prototype.printSnake = function () {
     console.log(s);
 };
 
-Snake.Game.prototype.loop = function () {
-    this.update();
-    this.printSnake();
-    this.draw();
+Snake.Game.prototype.printTreat = function () {
+    if (!this.treat) {
+        throw "no treat";
+    }
+    console.log("treat", this.treat);
 };
 
+// Start game
 document.game = new Snake.Game(document, window);
