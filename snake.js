@@ -99,6 +99,8 @@ Snake.Game = function (doc, wnd) {
     this.doc = doc;
     this.wnd = wnd;
 
+    this.grid = false;
+
     this.resume();
 };
 
@@ -221,7 +223,10 @@ Snake.Game.prototype.placeTreat = function () {
     }
 };
 
-Snake.Game.prototype.initGrid = function () {
+Snake.Game.prototype.drawGrid = function () {
+    if (this.grid) {
+        return;
+    }
     var i = 0,
         j = 0,
         topMargin = this.doc.getElementById('hud').offsetHeight,
@@ -237,10 +242,10 @@ Snake.Game.prototype.initGrid = function () {
             this.doc.body.appendChild(div);
         }
     }
+    this.grid = true;
 };
 
 Snake.Game.prototype.update = function () {
-    this.initGrid();
     this.initBox();
     this.initSnake();
 
@@ -257,6 +262,8 @@ Snake.Game.prototype.draw = function () {
         console.log('game over!');
         return;
     }
+
+    this.drawGrid();
     // FIXME: box
     // FIXME: snake
     // FIXME: treat
