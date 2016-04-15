@@ -363,12 +363,12 @@ Snake.Game.prototype.drawTreat = function () {
 
 Snake.Game.prototype.stateDescription = function () {
     if (this.state.gameOver) {
-        return "GAME OVER";
+        return "GAME OVER (RELOAD PAGE TO START OVER)";
     }
     if (this.state.paused) {
-        return "PAUSED";
+        return "PAUSED (PRESS R TO RESUME)";
     }
-    return "";
+    return "PRESS P TO PAUSE";
 };
 
 Snake.Game.prototype.drawHUD = function () {
