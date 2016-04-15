@@ -38,7 +38,7 @@ Snake.Config = function () {
     this.pixelSize = 20;
 
     // Box size in pixels
-    this.boxSize = 20;
+    this.boxSize = 14;
 
     // Snake is initially drawn using N pixels.
     this.snakeLength = 3;
@@ -47,16 +47,16 @@ Snake.Config = function () {
     // snake gains speed, ie. level is increased.
     // We use loop ticks as interval, not millis, since the game can
     // be paused and resumed.
-    this.levelIntervalTicks = 20;
+    this.levelIntervalTicks = 30;
 
     // If snake wonders for too long (30 sec for instance) treat
     // is repositioned.
     // We use loop ticks as interval, not millis, since the game can
     // be paused and resumed.
-    this.treatRepositionTicks = 10;
+    this.treatRepositionTicks = 30;
 
     // Game speed is increased by N millis with each level.
-    this.levelIncreaseMillis = 100;
+    this.levelIncreaseMillis = 200;
 
     // Maximum game speed is N millis.
     this.minimumLoopIntervalMillis = 300;
@@ -72,6 +72,7 @@ Snake.State = function () {
     this.direction = Snake.Direction.Up;
     this.ticks = 0;
     this.lastKeyTick = 0;
+    this.lastTreatTick = 0;
 };
 
 // Const keycodes
@@ -224,7 +225,7 @@ Snake.Game.prototype.getRandomInt = function (min, max) {
 };
 
 Snake.Game.prototype.placeTreat = function () {
-    if (this.state.ticks % this.config.treatRepositionTicks === 0) {
+    if (this.state.ticks - this.state.lastTreatTick >= this.config.treatRepositionTicks) {
         delete this.treat;
     }
 
@@ -238,6 +239,7 @@ Snake.Game.prototype.placeTreat = function () {
         treat = new Snake.Point(x, y);
         if (!treat.collides(this.snake) && !treat.collides(this.box)) {
             this.treat = treat;
+            this.state.lastTreatTick =  this.state.ticks;
         }
     }
 };
@@ -337,11 +339,25 @@ Snake.Game.prototype.drawSnake = function () {
 };
 
 Snake.Game.prototype.drawTreat = function () {
+    var div = 0,
+        requiredID = null,
+        existing = this.doc.getElementsByClassName('treat');
+    // If there's no treat, remove it from display
+    if (!this.treat && existing.length) {
+        existing[0].className = 'cell';
+        return;
+    }
     if (!this.treat) {
         return;
     }
-    var div = this.doc.getElementById(this.cellID(this.treat.x, this.treat.y));
-    div.className = 'cell treat';
+    // If there's a treat, check if its the same as displayed.
+    requiredID = this.cellID(this.treat.x, this.treat.y);
+    if (existing.length && existing[0].id !== requiredID) {
+        existing[0].className = 'cell';
+    } else {
+        div = this.doc.getElementById(requiredID);
+        div.className = 'cell treat';
+    }
 };
 
 Snake.Game.prototype.stateDescription = function () {
