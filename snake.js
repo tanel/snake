@@ -103,18 +103,8 @@ Snake.Game = function (doc, wnd) {
     this.gridDrawn = false;
     this.boxDrawn = false;
 
-    this.resetLoopTimer();
-
     // Force first loop, to make game more responsive at first
     this.loop();
-};
-
-Snake.Game.prototype.resetLoopTimer = function () {
-    if (this.loopTimer) {
-        this.wnd.clearInterval(this.loopTimer);
-        delete this.loopTimer;
-    }
-    this.loopTimer = this.wnd.setInterval(this.loop.bind(this), this.state.loopIntervalMillis);
 };
 
 Snake.Game.prototype.initBox = function () {
@@ -396,13 +386,12 @@ Snake.Game.prototype.increaseLevel = function () {
     if (this.state.loopIntervalMillis < this.config.minimumLoopIntervalMillis) {
         this.state.loopIntervalMillis = this.config.minimumLoopIntervalMillis;
     }
-
-    this.resetLoopTimer();
 };
 
 Snake.Game.prototype.loop = function () {
     this.update();
     this.draw();
+    this.wnd.setTimeout(this.loop.bind(this), this.state.loopIntervalMillis);
 };
 
 // Start game
