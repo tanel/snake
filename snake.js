@@ -278,6 +278,24 @@ Snake.Game.prototype.drawBox = function () {
     this.boxDrawn = true;
 };
 
+Snake.Game.prototype.drawSnake = function () {
+    // FIXME: remove existing snake:
+    var i = 0,
+        div = null,
+        pt = null;
+    for (i = 0; i < this.snake.length; i = i + 1) {
+        pt = this.snake[i];
+        div = this.doc.getElementById(this.cellID(pt.x, pt.y));
+        div.className = 'cell snake';
+    }
+};
+
+Snake.Game.prototype.drawTreat = function () {
+    // FIXME: remove existing treat, if its in a different location
+    var div = this.doc.getElementById(this.cellID(this.treat.x, this.treat.y));
+    div.className = 'cell treat';
+};
+
 Snake.Game.prototype.draw = function () {
     if (this.state.gameOver) {
         console.log('game over!');
@@ -288,8 +306,9 @@ Snake.Game.prototype.draw = function () {
 
     this.drawBox();
 
-    // FIXME: snake
-    // FIXME: treat
+    this.drawSnake();
+
+    this.drawTreat();
 
     this.doc.getElementById("level").innerHTML = this.state.level;
 

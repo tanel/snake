@@ -2,9 +2,14 @@
 	height:50px;
 }
 .cell {
-	border:1px solid black;	
 	position: absolute;
 }
 .box {
 	background-color: black;
+}
+.snake {
+	background-color: green;
+}
+.treat {
+	background-color: red;
 }
