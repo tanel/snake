@@ -99,7 +99,8 @@ Snake.Game = function (doc, wnd) {
     this.doc = doc;
     this.wnd = wnd;
 
-    this.grid = false;
+    this.gridDrawn = false;
+    this.boxDrawn = false;
 
     this.resume();
 };
@@ -223,29 +224,6 @@ Snake.Game.prototype.placeTreat = function () {
     }
 };
 
-Snake.Game.prototype.drawGrid = function () {
-    if (this.grid) {
-        return;
-    }
-    var i = 0,
-        j = 0,
-        topMargin = this.doc.getElementById('hud').offsetHeight,
-        div = null;
-    for (i = 0; i < this.config.boxSize; i = i + 1) {
-        for (j = 0; j < this.config.boxSize; j = j + 1) {
-            div = document.createElement('div');
-            div.className = 'cell';
-            div.style.width = this.config.pixelSize + 'px';
-            div.style.height = this.config.pixelSize + 'px';
-            div.style.left = (i * this.config.pixelSize) + 'px';
-            div.style.top = topMargin + (j * this.config.pixelSize) + 'px';
-            div.id = 'cell_' + i + '_' + (this.config.boxSize - j - 1);
-            this.doc.body.appendChild(div);
-        }
-    }
-    this.grid = true;
-};
-
 Snake.Game.prototype.update = function () {
     this.initBox();
     this.initSnake();
@@ -258,6 +236,48 @@ Snake.Game.prototype.update = function () {
     this.printTreat();
 };
 
+Snake.Game.prototype.cellID = function (x, y) {
+    return 'cell_' + x + '_' + y;
+};
+
+Snake.Game.prototype.drawGrid = function () {
+    if (this.gridDrawn) {
+        return;
+    }
+    var i = 0,
+        j = 0,
+        topMargin = this.doc.getElementById('hud').offsetHeight,
+        div = null;
+    for (i = 0; i < this.config.boxSize; i = i + 1) {
+        for (j = 0; j < this.config.boxSize; j = j + 1) {
+            div = this.doc.createElement('div');
+            div.className = 'cell';
+            div.style.width = this.config.pixelSize + 'px';
+            div.style.height = this.config.pixelSize + 'px';
+            div.style.left = (i * this.config.pixelSize) + 'px';
+            div.style.top = topMargin + (j * this.config.pixelSize) + 'px';
+            div.id = this.cellID(i, this.config.boxSize - j - 1);
+            this.doc.body.appendChild(div);
+        }
+    }
+    this.gridDrawn = true;
+};
+
+Snake.Game.prototype.drawBox = function () {
+    if (this.boxDrawn) {
+        return;
+    }
+    var i = 0,
+        div = null,
+        pt = null;
+    for (i = 0; i < this.box.length; i = i + 1) {
+        pt = this.box[i];
+        div = this.doc.getElementById(this.cellID(pt.x, pt.y));
+        div.className = 'cell box';
+    }
+    this.boxDrawn = true;
+};
+
 Snake.Game.prototype.draw = function () {
     if (this.state.gameOver) {
         console.log('game over!');
@@ -265,7 +285,9 @@ Snake.Game.prototype.draw = function () {
     }
 
     this.drawGrid();
-    // FIXME: box
+
+    this.drawBox();
+
     // FIXME: snake
     // FIXME: treat
 
