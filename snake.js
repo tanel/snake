@@ -180,9 +180,10 @@ Snake.Game.prototype.moveSnake = function () {
     // Check if head collides with treat
     if (head.collides([this.treat])) {
         // Leave tail in place, as treat was eaten
-        // Give points, according to level
-        this.state.points = this.state.points + this.state.level;
-        console.log('treat picked up, total points', this.state.points);
+        // Give score, according to level
+        this.state.score = this.state.score + this.state.level;
+        console.log('treat picked up, total score', this.state.score);
+        delete this.treat;
     } else {
         // Remove tail, as treat was not eaten
         this.snake.pop();
@@ -412,7 +413,7 @@ Snake.Game.prototype.printSnake = function () {
 
 Snake.Game.prototype.printTreat = function () {
     if (!this.treat) {
-        throw "no treat";
+        return;
     }
     console.log("treat", this.treat);
 };
