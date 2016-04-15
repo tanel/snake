@@ -182,19 +182,22 @@ Snake.Game.prototype.moveSnake = function () {
         // Leave tail in place, as treat was eaten
         // Give score, according to level
         this.state.score = this.state.score + this.state.level;
-        console.log('treat picked up, total score', this.state.score);
         delete this.treat;
     } else {
         // Remove tail, as treat was not eaten
         this.snake.pop();
     }
 
-    // Check if head collides with something
+    // Check if head collides with box
     if (head.collides(this.box)) {
         this.state.gameOver = true;
+        return;
     }
+
+    // Check if head collides with snake itself
     if (head.collides(this.snake)) {
         this.state.gameOver = true;
+        return;
     }
 
     // Set new head
@@ -236,9 +239,6 @@ Snake.Game.prototype.update = function () {
     this.placeTreat();
 
     this.moveSnake();
-
-    this.printSnake();
-    this.printTreat();
 };
 
 Snake.Game.prototype.cellID = function (x, y) {
@@ -303,7 +303,6 @@ Snake.Game.prototype.drawTreat = function () {
 
 Snake.Game.prototype.draw = function () {
     if (this.state.gameOver) {
-        console.log('game over!');
         return;
     }
 
@@ -322,7 +321,6 @@ Snake.Game.prototype.draw = function () {
 
 Snake.Game.prototype.onkeydown = function (evt) {
     if (this.state.gameOver) {
-        console.log("ignoring key, game is over");
         return;
     }
     var code = evt.keyCode;
@@ -330,7 +328,6 @@ Snake.Game.prototype.onkeydown = function (evt) {
             || (Snake.Direction.Down === code && Snake.Direction.Up !== this.state.direction)
             || (Snake.Direction.Left === code && Snake.Direction.Right !== this.state.direction)
             || (Snake.Direction.Right === code && Snake.Direction.Left !== this.state.direction)) {
-        console.log('new direction', evt.keyCode);
         this.state.direction = code;
     } else if (Snake.KeyCode.Pause === code) {
         this.pause();
@@ -342,10 +339,8 @@ Snake.Game.prototype.onkeydown = function (evt) {
 
 Snake.Game.prototype.pause = function () {
     if (this.state.gameOver) {
-        console.log('cannot pause, game is over');
         return;
     }
-    console.log('pause');
 
     this.wnd.clearInterval(this.timer);
     delete this.timer;
@@ -361,10 +356,8 @@ Snake.Game.prototype.isPaused = function () {
 
 Snake.Game.prototype.resume = function () {
     if (this.state.gameOver) {
-        console.log('cannot resume, game is over');
         return;
     }
-    console.log('resume');
 
     if (!this.timer) {
         this.timer = this.wnd.setInterval(this.loop.bind(this), this.state.loopIntervalMillis);
@@ -377,11 +370,9 @@ Snake.Game.prototype.resume = function () {
 
 Snake.Game.prototype.increaseLevel = function () {
     if (this.isPaused()) {
-        console.log("will not increase level, game is paused");
         return;
     }
     if (this.state.gameOver) {
-        console.log("will not increase level, game is over");
         return;
     }
     this.state.level = this.state.level + 1;
@@ -391,31 +382,12 @@ Snake.Game.prototype.increaseLevel = function () {
         this.state.loopIntervalMillis = this.config.minimumLoopIntervalMillis;
     }
 
-    console.log('new level', this.state.level);
-
     this.resume();
 };
 
 Snake.Game.prototype.loop = function () {
     this.update();
     this.draw();
-};
-
-// Debugging
-
-Snake.Game.prototype.printSnake = function () {
-    var i = 0, s = "snake";
-    for (i = 0; i < this.snake.length; i = i + 1) {
-        s = s + " " + this.snake[i];
-    }
-    console.log(s);
-};
-
-Snake.Game.prototype.printTreat = function () {
-    if (!this.treat) {
-        return;
-    }
-    console.log("treat", this.treat);
 };
 
 // Start game
