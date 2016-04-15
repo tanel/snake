@@ -40,11 +40,6 @@ Snake.Config = function () {
     this.levelIntervalTicks = 20;
     this.levelIncreaseMillis = 100;
     this.minimumLoopIntervalMillis = 300;
-
-    // validate config
-    if (this.pixelSize < 1) {
-        alert("pixel size must be at least 1 else its not visible");
-    }
 };
 
 // Initial game state
