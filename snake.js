@@ -37,7 +37,7 @@ Snake.Config = function () {
     this.pixelSize = 30;
     this.boxSize = 20;
     this.snakeLength = 3;
-    this.levelIntervalTicks = 10;
+    this.levelIntervalTicks = 20;
     this.levelIncreaseMillis = 100;
     this.minimumLoopIntervalMillis = 300;
 };
@@ -177,10 +177,6 @@ Snake.Game.prototype.calculateShift = function () {
 };
 
 Snake.Game.prototype.moveSnake = function () {
-    if (this.state.gameOver) {
-        return;
-    }
-
     // Calculate new head
     var head = new Snake.Point(this.snake[0].x, this.snake[0].y),
         shift = this.calculateShift();
@@ -221,9 +217,6 @@ Snake.Game.prototype.getRandomInt = function (min, max) {
 };
 
 Snake.Game.prototype.placeTreat = function () {
-    if (this.state.gameOver) {
-        return;
-    }
     if (this.treat) {
         return;
     }
@@ -243,6 +236,10 @@ Snake.Game.prototype.update = function () {
     this.initSnake();
 
     if (this.state.paused) {
+        return;
+    }
+
+    if (this.state.gameOver) {
         return;
     }
 
