@@ -296,19 +296,40 @@ Snake.Game.prototype.drawBox = function () {
 };
 
 Snake.Game.prototype.drawSnake = function () {
-    // FIXME: remove existing snake:
     var i = 0,
+        id = null,
         div = null,
-        pt = null;
+        existing = this.doc.getElementsByClassName('snake'),
+        requiredIDs = {};
+    // lookup required cells
     for (i = 0; i < this.snake.length; i = i + 1) {
-        pt = this.snake[i];
-        div = this.doc.getElementById(this.cellID(pt.x, pt.y));
-        div.className = 'cell snake';
+        requiredIDs[this.cellID(this.snake[i].x, this.snake[i].y)] = true;
+    }
+    // check existing cells
+    for (i = 0; i < existing.length; i = i + 1) {
+        // if the cell is required, leave it as is.
+        // else, "delete" it
+        if (!requiredIDs[existing[i].id]) {
+            div = this.doc.getElementById(existing[i].id);
+            div.className = 'cell';
+        } else {
+            // mark it as not missing
+            delete requiredIDs[existing[i].id];
+        }
+    }
+    // draw missing cell(s)
+    for (id in requiredIDs) {
+        if (requiredIDs.hasOwnProperty(id)) {
+            div = this.doc.getElementById(id);
+            div.className = 'cell snake';
+        }
     }
 };
 
 Snake.Game.prototype.drawTreat = function () {
-    // FIXME: remove existing treat, if its in a different location
+    if (!this.treat) {
+        return;
+    }
     var div = this.doc.getElementById(this.cellID(this.treat.x, this.treat.y));
     div.className = 'cell treat';
 };
