@@ -64,8 +64,7 @@ Snake.State = function () {
     this.paused = false;
     this.loopIntervalMillis = 500;
     this.direction = Snake.Direction.Up;
-    this.levelTicks = 0;
-    this.totalTicks = 0;
+    this.ticks = 0;
     this.lastKeyTick = 0;
 };
 
@@ -249,9 +248,7 @@ Snake.Game.prototype.update = function () {
 
     this.moveSnake();
 
-    this.state.totalTicks = this.state.totalTicks + 1;
-
-    this.state.levelTicks = this.state.levelTicks + 1;
+    this.state.ticks = this.state.ticks + 1;
 
     this.increaseLevel();
 };
@@ -373,7 +370,7 @@ Snake.Game.prototype.onkeydown = function (evt) {
     if (this.state.gameOver) {
         return;
     }
-    if (this.state.lastKeyTick == this.state.totalTicks) {
+    if (this.state.lastKeyTick === this.state.ticks) {
         // Dont allow multiple keys in same tick
         return;
     }
@@ -383,7 +380,7 @@ Snake.Game.prototype.onkeydown = function (evt) {
             || (Snake.Direction.Left === code && Snake.Direction.Right !== this.state.direction)
             || (Snake.Direction.Right === code && Snake.Direction.Left !== this.state.direction)) {
         this.state.direction = code;
-        this.state.lastKeyTick = this.state.totalTicks;
+        this.state.lastKeyTick = this.state.ticks;
     } else if (Snake.KeyCode.Pause === code) {
         this.state.paused = true;
     } else if (Snake.KeyCode.Resume === code) {
@@ -393,11 +390,9 @@ Snake.Game.prototype.onkeydown = function (evt) {
 };
 
 Snake.Game.prototype.increaseLevel = function () {
-    if (this.state.levelTicks < this.config.levelIntervalTicks) {
+    if (this.state.ticks % this.config.levelIntervalTicks !== 0) {
         return;
     }
-
-    this.state.levelTicks = 0;
 
     this.state.level = this.state.level + 1;
 
