@@ -239,6 +239,7 @@ Snake.Game.prototype.drawGrid = function () {
             div.style.height = this.config.pixelSize + 'px';
             div.style.left = (i * this.config.pixelSize) + 'px';
             div.style.top = topMargin + (j * this.config.pixelSize) + 'px';
+            div.id = 'cell_' + i + '_' + (this.config.boxSize - j - 1);
             this.doc.body.appendChild(div);
         }
     }
