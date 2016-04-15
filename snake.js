@@ -38,7 +38,7 @@ Snake.Config = function () {
     this.pixelSize = 20;
 
     // Box size in pixels
-    this.boxSize = 14;
+    this.boxSize = 15;
 
     // Snake is initially drawn using N pixels.
     this.snakeLength = 3;
@@ -157,11 +157,12 @@ Snake.Game.prototype.initSnake = function () {
     if (this.snake) {
         return;
     }
-    var i = 0;
+    var i = 0,
+        x = Math.floor(this.config.boxSize / 2);
     this.snake = [];
     // from head to tail
     for (i = this.config.snakeLength; i > 0; i = i - 1) {
-        this.snake.push(new Snake.Point(this.config.boxSize / 2, i));
+        this.snake.push(new Snake.Point(x, i));
     }
 };
 
