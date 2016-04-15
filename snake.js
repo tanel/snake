@@ -34,12 +34,17 @@ var Snake = {};
 
 // Configuration
 Snake.Config = function () {
-    this.pixelSize = 30;
+    this.pixelSize = 20;
     this.boxSize = 20;
     this.snakeLength = 3;
     this.levelIntervalTicks = 20;
     this.levelIncreaseMillis = 100;
     this.minimumLoopIntervalMillis = 300;
+
+    // validate config
+    if (this.pixelSize < 1) {
+        alert("pixel size must be at least 1 else its not visible");
+    }
 };
 
 // Initial game state
@@ -47,7 +52,7 @@ Snake.State = function () {
     this.level = 1;
     this.score = 0;
     this.gameOver = false;
-    this.loopIntervalMillis = 1000;
+    this.loopIntervalMillis = 500;
     this.direction = Snake.Direction.Up;
     this.ticks = 0;
 };
@@ -77,13 +82,7 @@ Snake.Point.prototype.toString = function () {
 
 Snake.Point.prototype.collides = function (arr) {
     var i;
-    if (!arr || !arr.length) {
-        throw "cannot check collision with empty array!";
-    }
     for (i = 0; i < arr.length; i = i + 1) {
-        if (!arr[i]) {
-            throw "collision array contains null element!";
-        }
         if (this.x === arr[i].x && this.y === arr[i].y) {
             return true;
         }
@@ -105,6 +104,9 @@ Snake.Game = function (doc, wnd) {
     this.boxDrawn = false;
 
     this.resetLoopTimer();
+
+    // Force first loop, to make game more responsive at first
+    this.loop();
 };
 
 Snake.Game.prototype.resetLoopTimer = function () {
@@ -170,8 +172,6 @@ Snake.Game.prototype.calculateShift = function () {
     case Snake.Direction.Right:
         shift.x = 1;
         break;
-    default:
-        throw "invalid direction " + this.direction;
     }
     return shift;
 };
