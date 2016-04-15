@@ -37,7 +37,8 @@ Snake.Config = function () {
     this.pixelSize = 30;
     this.boxSize = 20;
     this.snakeLength = 3;
-    this.levelIncreaseIntervalMillis = 30000;
+    this.levelIntervalTicks = 10;
+    this.levelIncreaseMillis = 100;
     this.minimumLoopIntervalMillis = 300;
 };
 
@@ -48,6 +49,7 @@ Snake.State = function () {
     this.gameOver = false;
     this.loopIntervalMillis = 1000;
     this.direction = Snake.Direction.Up;
+    this.ticks = 0;
 };
 
 // Const keycodes
@@ -102,7 +104,15 @@ Snake.Game = function (doc, wnd) {
     this.gridDrawn = false;
     this.boxDrawn = false;
 
-    this.resume();
+    this.resetLoopTimer();
+};
+
+Snake.Game.prototype.resetLoopTimer = function () {
+    if (this.loopTimer) {
+        this.wnd.clearInterval(this.loopTimer);
+        delete this.loopTimer;
+    }
+    this.loopTimer = this.wnd.setInterval(this.loop.bind(this), this.state.loopIntervalMillis);
 };
 
 Snake.Game.prototype.initBox = function () {
@@ -222,13 +232,9 @@ Snake.Game.prototype.placeTreat = function () {
         x = this.getRandomInt(1, this.config.boxSize - 1);
         y = this.getRandomInt(1, this.config.boxSize - 1);
         treat = new Snake.Point(x, y);
-        if (treat.collides(this.snake)) {
-            continue;
+        if (!treat.collides(this.snake) && !treat.collides(this.box)) {
+            this.treat = treat;
         }
-        if (treat.collides(this.box)) {
-            continue;
-        }
-        this.treat = treat;
     }
 };
 
@@ -236,9 +242,15 @@ Snake.Game.prototype.update = function () {
     this.initBox();
     this.initSnake();
 
+    if (this.state.paused) {
+        return;
+    }
+
     this.placeTreat();
 
     this.moveSnake();
+
+    this.increaseLevel();
 };
 
 Snake.Game.prototype.cellID = function (x, y) {
@@ -301,7 +313,25 @@ Snake.Game.prototype.drawTreat = function () {
     div.className = 'cell treat';
 };
 
+Snake.Game.prototype.stateDescription = function () {
+    if (this.state.gameOver) {
+        return "GAME OVER";
+    }
+    if (this.state.paused) {
+        return "PAUSED";
+    }
+    return "";
+};
+
+Snake.Game.prototype.drawHUD = function () {
+    this.doc.getElementById("level").innerHTML = this.state.level;
+    this.doc.getElementById("score").innerHTML = this.state.score;
+    this.doc.getElementById("state").innerHTML = this.stateDescription();
+};
+
 Snake.Game.prototype.draw = function () {
+    this.drawHUD();
+
     if (this.state.gameOver) {
         return;
     }
@@ -313,10 +343,6 @@ Snake.Game.prototype.draw = function () {
     this.drawSnake();
 
     this.drawTreat();
-
-    this.doc.getElementById("level").innerHTML = this.state.level;
-
-    this.doc.getElementById("score").innerHTML = this.state.score;
 };
 
 Snake.Game.prototype.onkeydown = function (evt) {
@@ -342,16 +368,7 @@ Snake.Game.prototype.pause = function () {
         return;
     }
 
-    this.wnd.clearInterval(this.timer);
-    delete this.timer;
-
-    this.wnd.clearInterval(this.increaseLevelTimer);
-    delete this.increaseLevelTimer;
-
-};
-
-Snake.Game.prototype.isPaused = function () {
-    return !this.timer;
+    this.state.paused = true;
 };
 
 Snake.Game.prototype.resume = function () {
@@ -359,30 +376,26 @@ Snake.Game.prototype.resume = function () {
         return;
     }
 
-    if (!this.timer) {
-        this.timer = this.wnd.setInterval(this.loop.bind(this), this.state.loopIntervalMillis);
-    }
-
-    if (!this.increaseLevelTimer) {
-        this.increaseLevelTimer = this.wnd.setInterval(this.increaseLevel.bind(this), this.config.levelIncreaseIntervalMillis);
-    }
+    this.state.paused = false;
 };
 
 Snake.Game.prototype.increaseLevel = function () {
-    if (this.isPaused()) {
+    this.state.ticks = this.state.ticks + 1;
+    if (this.state.ticks < this.config.levelIntervalTicks) {
         return;
     }
-    if (this.state.gameOver) {
-        return;
-    }
+
+    this.state.ticks = 0;
+
     this.state.level = this.state.level + 1;
-    delete this.timer;
-    this.state.loopIntervalMillis = this.state.loopIntervalMillis - 100;
+
+    // Set new loop interval, but not less than n millis
+    this.state.loopIntervalMillis = this.state.loopIntervalMillis - this.config.levelIncreaseMillis;
     if (this.state.loopIntervalMillis < this.config.minimumLoopIntervalMillis) {
         this.state.loopIntervalMillis = this.config.minimumLoopIntervalMillis;
     }
 
-    this.resume();
+    this.resetLoopTimer();
 };
 
 Snake.Game.prototype.loop = function () {
