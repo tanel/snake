@@ -50,6 +50,7 @@ Snake.State = function () {
     this.loopIntervalMillis = 500;
     this.direction = Snake.Direction.Up;
     this.ticks = 0;
+    this.lastKeyTick = 0;
 };
 
 // Const keycodes
@@ -352,12 +353,17 @@ Snake.Game.prototype.onkeydown = function (evt) {
     if (this.state.gameOver) {
         return;
     }
+    if (this.state.lastKeyTick == this.state.ticks) {
+        // Dont allow multiple keys in same tick
+        return;
+    }
     var code = evt.keyCode;
     if ((Snake.Direction.Up === code && Snake.Direction.Down !== this.state.direction)
             || (Snake.Direction.Down === code && Snake.Direction.Up !== this.state.direction)
             || (Snake.Direction.Left === code && Snake.Direction.Right !== this.state.direction)
             || (Snake.Direction.Right === code && Snake.Direction.Left !== this.state.direction)) {
         this.state.direction = code;
+        this.state.lastKeyTick = this.state.ticks;
     } else if (Snake.KeyCode.Pause === code) {
         this.state.paused = true;
     } else if (Snake.KeyCode.Resume === code) {
@@ -373,6 +379,7 @@ Snake.Game.prototype.increaseLevel = function () {
     }
 
     this.state.ticks = 0;
+    this.state.lastKeyTick = 0;
 
     this.state.level = this.state.level + 1;
 
