@@ -356,27 +356,11 @@ Snake.Game.prototype.onkeydown = function (evt) {
             || (Snake.Direction.Right === code && Snake.Direction.Left !== this.state.direction)) {
         this.state.direction = code;
     } else if (Snake.KeyCode.Pause === code) {
-        this.pause();
+        this.state.paused = true;
     } else if (Snake.KeyCode.Resume === code) {
-        this.resume();
+        this.state.paused = false;
     }
     return true;
-};
-
-Snake.Game.prototype.pause = function () {
-    if (this.state.gameOver) {
-        return;
-    }
-
-    this.state.paused = true;
-};
-
-Snake.Game.prototype.resume = function () {
-    if (this.state.gameOver) {
-        return;
-    }
-
-    this.state.paused = false;
 };
 
 Snake.Game.prototype.increaseLevel = function () {
