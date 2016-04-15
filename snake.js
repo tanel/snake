@@ -49,6 +49,12 @@ Snake.Config = function () {
     // be paused and resumed.
     this.levelIntervalTicks = 20;
 
+    // If snake wonders for too long (30 sec for instance) treat
+    // is repositioned.
+    // We use loop ticks as interval, not millis, since the game can
+    // be paused and resumed.
+    this.treatRepositionTicks = 10;
+
     // Game speed is increased by N millis with each level.
     this.levelIncreaseMillis = 100;
 
@@ -218,6 +224,10 @@ Snake.Game.prototype.getRandomInt = function (min, max) {
 };
 
 Snake.Game.prototype.placeTreat = function () {
+    if (this.state.ticks % this.config.treatRepositionTicks === 0) {
+        delete this.treat;
+    }
+
     if (this.treat) {
         return;
     }
