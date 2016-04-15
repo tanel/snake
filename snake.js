@@ -34,11 +34,25 @@ var Snake = {};
 
 // Configuration
 Snake.Config = function () {
+    // Pixel size.
     this.pixelSize = 20;
+
+    // Box size in pixels
     this.boxSize = 20;
+
+    // Snake is initially drawn using N pixels.
     this.snakeLength = 3;
+
+    // Every now and then (interval should be configurable from code)
+    // snake gains speed, ie. level is increased.
+    // We use loop ticks as interval, not millis, since the game can
+    // be paused and resumed.
     this.levelIntervalTicks = 20;
+
+    // Game speed is increased by N millis with each level.
     this.levelIncreaseMillis = 100;
+
+    // Maximum game speed is N millis.
     this.minimumLoopIntervalMillis = 300;
 };
 
@@ -47,6 +61,7 @@ Snake.State = function () {
     this.level = 1;
     this.score = 0;
     this.gameOver = false;
+    this.paused = false;
     this.loopIntervalMillis = 500;
     this.direction = Snake.Direction.Up;
     this.ticks = 0;
