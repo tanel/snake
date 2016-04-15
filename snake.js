@@ -218,9 +218,13 @@ Snake.Game.prototype.placeTreat = function () {
         x = this.getRandomInt(1, this.config.boxSize - 1);
         y = this.getRandomInt(1, this.config.boxSize - 1);
         treat = new Snake.Point(x, y);
-        if (!treat.collides(this.snake)) {
-            this.treat = treat;
+        if (treat.collides(this.snake)) {
+            continue;
         }
+        if (treat.collides(this.box)) {
+            continue;
+        }
+        this.treat = treat;
     }
 };
 
