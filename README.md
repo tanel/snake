@@ -1,3 +1,3 @@
 Snake Game in pure JS.
 
-[https://tanel.github.io/snake/](Play)
+[Play](https://tanel.github.io/snake/)
